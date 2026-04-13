@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    // --- Exception classes as static inner classes for convenience ---
+    
 
     public static class NotFoundException extends RuntimeException {
         public NotFoundException() { super("not found"); }

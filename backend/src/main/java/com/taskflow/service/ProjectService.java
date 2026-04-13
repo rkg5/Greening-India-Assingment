@@ -40,7 +40,7 @@ public class ProjectService {
         if (!project.getOwnerId().equals(currentUser.getId())) {
             boolean hasTask = projectRepository.userHasAssignedTask(projectId, currentUser.getId());
             if (!hasTask) {
-                throw new NotFoundException(); // Don't leak existence
+                throw new NotFoundException();
             }
         }
 

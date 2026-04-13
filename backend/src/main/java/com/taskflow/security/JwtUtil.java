@@ -21,7 +21,7 @@ public class JwtUtil {
     public JwtUtil(
             @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.expire-hours}") int expireHours) {
-        // Ensure the key is at least 256 bits for HS256
+        
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length < 32) {
             byte[] padded = new byte[32];
