@@ -1,5 +1,4 @@
--- Use VARCHAR with CHECK constraints for Hibernate compatibility
--- (instead of custom PostgreSQL enum types which cause type-casting issues with JPA)
+-- Use VARCHAR with CHECK constraints to validate task status and priority
 
 CREATE TABLE tasks (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
