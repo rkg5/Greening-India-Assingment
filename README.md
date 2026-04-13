@@ -11,25 +11,23 @@ A task management system built for a Greening India engineering assignment. It l
 
 ## 1. Architecture Decisions
 
-- **Java / Spring Boot over Go** — I'm most productive in Java for backend work, and the assignment brief allowed any language with a note in the README. Spring Boot gives me auto-configuration, declarative security, Flyway-managed migrations, and validation out of the box — saving significant boilerplate compared to a raw Go implementation.
+- **Java / Spring Boot** — Chosen for its strong typing, rich ecosystem, and built-in support for validation, security, and data access. The assignment brief allowed any language with a note in the README.
 
-- **Flyway over manual SQL or auto-migrate** — I wanted explicit, versioned control over the schema. Every schema change is a numbered SQL migration that I can audit, roll back, and run deterministically in CI. Flyway runs automatically on container startup so there are zero manual steps.
+- **Flyway** — Provides explicit, versioned, and deterministic database migrations. Migrations run automatically on application startup.
 
-- **Controller → Service → Repository layering** — Controllers handle only HTTP concerns and call a service method. Services hold business logic (access checks, authorization). Repositories own all DB queries via Spring Data JPA. This prevents god-object controllers and makes unit testing each layer independently possible without spinning up a full stack.
+- **Layered Architecture** — Standard Controller → Service → Repository layering. Controllers handle HTTP, services contain business logic and authorization checks, and repositories interact with the database via Spring Data JPA.
 
-- **TanStack Query for server state** — I needed optimistic updates for task status changes (clicking a status badge should feel instant). TanStack Query handles cache invalidation, background refetching, and rollback on error without me writing that plumbing myself.
+- **TanStack Query** — Used on the frontend for server state management, caching, background refetching, and optimistic updates.
 
-- **shadcn/ui for components** — Unlike a traditional component library, shadcn/ui gives me ownership of the component source. Dark mode works via CSS variables rather than a runtime theming library, so there's no flash on load and no extra JS bundle weight.
+- **shadcn/ui** — Provides accessible, customizable components where you own the source code. Dark mode is implemented via CSS variables without runtime overhead.
 
-- **Optimistic updates on status changes** — When a user changes a task's status, the UI updates immediately and the PATCH request fires in the background. If the request fails, TanStack Query rolls the cache back to the previous state automatically.
+- **Optimistic Updates** — When a task status is changed, the UI updates immediately while the PATCH request fires in the background. It automatically rolls back if the request fails.
 
-- **creator_id authorization on task delete** — `DELETE /tasks/{id}` checks both `task.creator_id == user.id` (task creator) and `project.owner_id == user.id` (project owner). Either party may delete. This is intentional: a project owner should be able to clean up any task in their project without needing to be the one who created it.
+- **Authorization** — Task deletion (`DELETE /tasks/{id}`) allows both the task creator and the project owner. Task updates (`PATCH /tasks/{id}`) require the user to be a member of the project (either the owner, or assigned to a task within). 
 
-- **BCrypt cost 12** — BCrypt at cost 12 takes ~250ms of CPU time. This is deliberately high enough to make brute-force attacks impractical while remaining acceptable for a login endpoint. The PasswordEncoder bean is configured globally with cost 12.
+- **Security** — Passwords are hashed using BCrypt at cost 12. JWT is used for stateless API authentication.
 
-- **Task update verifies project membership** — `PATCH /tasks/{id}` calls `projectService.getProject` before applying changes. Without this, any authenticated user who guessed a task ID could update it even if they had no access to the project. The check uses the same membership logic as the project detail endpoint.
-
-- **Offset pagination with `PaginationMeta`** — Both list endpoints (`GET /projects/` and `GET /projects/{id}/tasks`) return a `pagination` envelope with `page`, `limit`, `total`, and `pages` so clients can build page controls without a separate count request.
+- **Pagination** — Offset pagination with a `PaginationMeta` envelope is implemented on list endpoints (`GET /projects/` and `GET /projects/{id}/tasks`).
 
 ---
 
@@ -155,20 +153,11 @@ The E2E suite covers:
 
 ---
 
-## 7. What I Would Do With More Time
+## 7. Future Improvements
 
-- **Cursor-based pagination** — I implemented offset pagination on both list endpoints. In production I'd replace it with cursor-based pagination to avoid the N+1 count query and to handle concurrent inserts correctly (offset pages shift when rows are inserted mid-browse).
-
-- **Real-time updates via WebSocket** — I deprioritized this because adding a WebSocket layer in 72 hours risked destabilizing the core CRUD flow. I'd use Spring WebSocket with a Redis pub/sub backend.
-
-- **Drag-and-drop task reordering** — The complexity-to-score tradeoff didn't make sense here. I'd reach for `@dnd-kit/core` since it handles keyboard accessibility correctly, which most simpler DnD libraries don't.
-
-- **Proper refresh token flow** — Right now JWTs are valid for 24 hours with no refresh. A real system would issue short-lived access tokens (15 min) alongside a rotating refresh token stored in an HttpOnly cookie.
-
-- **Email notifications** — Skipped entirely. I'd integrate a background task queue so sending email never blocks the request lifecycle.
-
-- **Expanded Playwright coverage** — The current E2E suite covers the core happy paths. I'd add tests for edge cases like concurrent edits, network failure rollback, and mobile viewport layout.
-
-- **Proper RBAC** — Currently it's binary: you own the project or you have an assigned task in it. A real product would need roles (viewer, editor, admin) per project with invite flows.
-
-- **Go rewrite** — Given more time I would have written this in Go as preferred. I chose Java/Spring Boot to ship a complete, production-quality system within the 72-hour window since it's my strongest backend stack.
+- **Cursor-based Pagination** — Replace offset pagination with cursor-based pagination for better performance on large datasets and to prevent duplicate results during concurrent inserts.
+- **WebSocket Integration** — Implement real-time task updates via WebSockets so multiple users editing the same project see changes instantly.
+- **Task Reordering** — Add drag-and-drop task prioritization within columns.
+- **Advanced Authentication** — Implement short-lived access tokens alongside rotating refresh tokens in HttpOnly cookies.
+- **Role-Based Access Control (RBAC)** — Expand the binary ownership model to support fine-grained roles (viewer, editor, admin) and formal project invitations.
+- **Background Jobs** — Add a durable message queue or task scheduler for async processing like email notifications.

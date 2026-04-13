@@ -1,4 +1,4 @@
--- Use VARCHAR with CHECK constraints to validate task status and priority
+-- Custom PostgreSQL enum mappings removed; using VARCHAR with CHECK constraints
 
 CREATE TABLE tasks (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),

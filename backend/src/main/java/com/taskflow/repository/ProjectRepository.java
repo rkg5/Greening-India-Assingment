@@ -27,7 +27,6 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
 
     /**
      * Count distinct users involved in a project (owner + assignees).
-     * Uses native SQL because JPQL doesn't support UNION.
      */
     @Query(value = """
         SELECT COUNT(*) FROM (
