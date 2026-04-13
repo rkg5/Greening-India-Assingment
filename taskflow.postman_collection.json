@@ -1,0 +1,508 @@
+{
+  "info": {
+    "name": "TaskFlow API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "taskflow-api-v1"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "project_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "task_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\"status\": \"ok\", \"db\": \"connected\"}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST /auth/register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('token', pm.response.json().token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"name\": \"Alice\",\n    \"email\": \"alice@example.com\",\n    \"created_at\": \"2026-04-12T10:00:00Z\"\n  }\n}"
+            },
+            {
+              "name": "400 Validation Failed",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"validation failed\",\n  \"fields\": {\n    \"email\": \"value is not a valid email address\"\n  }\n}"
+            },
+            {
+              "name": "409 Email Already Registered",
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"error\": \"email already registered\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /auth/login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('token', pm.response.json().token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"name\": \"Alice\",\n    \"email\": \"alice@example.com\",\n    \"created_at\": \"2026-04-12T10:00:00Z\"\n  }\n}"
+            },
+            {
+              "name": "401 Wrong Credentials",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"error\": \"unauthorized\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "GET /projects/",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/?page=1&limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["projects", ""],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "50" }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"projects\": [\n    {\n      \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n      \"name\": \"My Project\",\n      \"description\": \"A sample project\",\n      \"owner_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"created_at\": \"2026-04-12T10:00:00Z\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10,\n    \"total\": 1,\n    \"pages\": 1\n  }\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"error\": \"unauthorized\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /projects/",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('project_id', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/",
+              "host": ["{{base_url}}"],
+              "path": ["projects", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Project\",\n  \"description\": \"An optional description\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"name\": \"My Project\",\n  \"description\": \"An optional description\",\n  \"owner_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"created_at\": \"2026-04-12T10:00:00Z\"\n}"
+            },
+            {
+              "name": "400 Validation Failed",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"validation failed\",\n  \"fields\": {\n    \"name\": \"String should have at least 1 character\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /projects/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["projects", "{{project_id}}"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"name\": \"My Project\",\n  \"description\": \"An optional description\",\n  \"owner_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"created_at\": \"2026-04-12T10:00:00Z\",\n  \"tasks\": []\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH /projects/{id}",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["projects", "{{project_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Renamed Project\",\n  \"description\": \"Updated description\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"name\": \"Renamed Project\",\n  \"description\": \"Updated description\",\n  \"owner_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"created_at\": \"2026-04-12T10:00:00Z\"\n}"
+            },
+            {
+              "name": "403 Forbidden",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"error\": \"forbidden\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE /projects/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["projects", "{{project_id}}"]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "403 Forbidden",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"error\": \"forbidden\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /projects/{id}/stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/stats",
+              "host": ["{{base_url}}"],
+              "path": ["projects", "{{project_id}}", "stats"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"task_counts\": {\n    \"todo\": 3,\n    \"in_progress\": 1,\n    \"done\": 2\n  },\n  \"by_assignee\": [\n    {\n      \"assignee_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"assignee_name\": \"Alice\",\n      \"count\": 4\n    },\n    {\n      \"assignee_id\": null,\n      \"assignee_name\": null,\n      \"count\": 2\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "GET /projects/{id}/tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/tasks?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["projects", "{{project_id}}", "tasks"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "status", "value": "todo", "disabled": true },
+                { "key": "assignee", "value": "", "disabled": true }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"tasks\": [\n    {\n      \"id\": \"550e8400-e29b-41d4-a716-446655440002\",\n      \"title\": \"Design the schema\",\n      \"description\": null,\n      \"status\": \"todo\",\n      \"priority\": \"medium\",\n      \"project_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n      \"assignee_id\": null,\n      \"due_date\": null,\n      \"created_at\": \"2026-04-12T10:00:00Z\",\n      \"updated_at\": \"2026-04-12T10:00:00Z\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 1,\n    \"pages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /projects/{id}/tasks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('task_id', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/tasks",
+              "host": ["{{base_url}}"],
+              "path": ["projects", "{{project_id}}", "tasks"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Design the schema\",\n  \"description\": \"ERD and migration plan\",\n  \"priority\": \"high\",\n  \"assignee_id\": null,\n  \"due_date\": \"2026-05-01\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440002\",\n  \"title\": \"Design the schema\",\n  \"description\": \"ERD and migration plan\",\n  \"status\": \"todo\",\n  \"priority\": \"high\",\n  \"project_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"assignee_id\": null,\n  \"due_date\": \"2026-05-01\",\n  \"created_at\": \"2026-04-12T10:00:00Z\",\n  \"updated_at\": \"2026-04-12T10:00:00Z\"\n}"
+            },
+            {
+              "name": "400 Validation Failed",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"validation failed\",\n  \"fields\": {\n    \"title\": \"String should have at least 1 character\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH /tasks/{id}",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tasks/{{task_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["tasks", "{{task_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_progress\",\n  \"priority\": \"high\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440002\",\n  \"title\": \"Design the schema\",\n  \"description\": \"ERD and migration plan\",\n  \"status\": \"in_progress\",\n  \"priority\": \"high\",\n  \"project_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"assignee_id\": null,\n  \"due_date\": \"2026-05-01\",\n  \"created_at\": \"2026-04-12T10:00:00Z\",\n  \"updated_at\": \"2026-04-12T11:00:00Z\"\n}"
+            },
+            {
+              "name": "400 Invalid Status",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"validation failed\",\n  \"fields\": {\n    \"status\": \"Input should be 'todo', 'in_progress' or 'done'\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE /tasks/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tasks/{{task_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["tasks", "{{task_id}}"]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "403 Forbidden (not creator or project owner)",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"error\": \"forbidden\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"not found\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

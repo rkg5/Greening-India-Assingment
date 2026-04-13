@@ -1,0 +1,22 @@
+# Test profile — uses H2 in-memory for tests that don't need Postgres
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
+
+app:
+  jwt:
+    secret: test-secret-key-for-unit-tests-only
+    expire-hours: 24
+  cors:
+    allowed-origins: http://localhost:3000
+
+server:
+  port: 0
