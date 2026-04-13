@@ -31,11 +31,12 @@ public class Project {
     @JoinColumn(name = "owner_id", insertable = false, updatable = false)
     private User owner;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true,
+               fetch = FetchType.LAZY)
+    @OrderBy("createdAt DESC")
     private List<Task> tasks;
 
-    @Column(name = "created_at", nullable = false, updatable = false,
-            insertable = false, columnDefinition = "TIMESTAMP DEFAULT now()")
+    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private OffsetDateTime createdAt;
 
     @Transient

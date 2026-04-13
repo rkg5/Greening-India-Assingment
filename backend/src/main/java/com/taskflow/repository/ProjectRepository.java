@@ -25,13 +25,17 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
     @Query("SELECT COUNT(t) FROM Task t WHERE t.projectId = :projectId")
     int countTasksByProjectId(@Param("projectId") UUID projectId);
 
-    @Query("""
-        SELECT COUNT(DISTINCT u) FROM (
-            SELECT p.ownerId AS uid FROM Project p WHERE p.id = :projectId
+    /**
+     * Count distinct users involved in a project (owner + assignees).
+     * Uses native SQL because JPQL doesn't support UNION.
+     */
+    @Query(value = """
+        SELECT COUNT(*) FROM (
+            SELECT owner_id AS uid FROM projects WHERE id = :projectId
             UNION
-            SELECT t.assigneeId AS uid FROM Task t WHERE t.projectId = :projectId AND t.assigneeId IS NOT NULL
-        ) u
-        """)
+            SELECT assignee_id AS uid FROM tasks WHERE project_id = :projectId AND assignee_id IS NOT NULL
+        ) sub
+        """, nativeQuery = true)
     int countUsersByProjectId(@Param("projectId") UUID projectId);
 
     @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Task t WHERE t.projectId = :projectId AND t.assigneeId = :userId")

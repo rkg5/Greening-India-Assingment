@@ -24,11 +24,11 @@ public class Task {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     @Convert(converter = TaskStatusConverter.class)
     private TaskStatus status;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     @Convert(converter = TaskPriorityConverter.class)
     private TaskPriority priority;
 
@@ -57,10 +57,10 @@ public class Task {
     private LocalDate dueDate;
 
     @Column(name = "created_at", nullable = false, updatable = false,
-            insertable = false, columnDefinition = "TIMESTAMP DEFAULT now()")
+            insertable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
     private OffsetDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false,
-            insertable = false, columnDefinition = "TIMESTAMP DEFAULT now()")
+            insertable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now()")
     private OffsetDateTime updatedAt;
 }

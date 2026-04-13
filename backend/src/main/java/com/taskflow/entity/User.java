@@ -26,7 +26,6 @@ public class User {
     @Column(nullable = false, length = 255)
     private String password;
 
-    @Column(name = "created_at", nullable = false, updatable = false,
-            insertable = false, columnDefinition = "TIMESTAMP DEFAULT now()")
+    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private OffsetDateTime createdAt;
 }
